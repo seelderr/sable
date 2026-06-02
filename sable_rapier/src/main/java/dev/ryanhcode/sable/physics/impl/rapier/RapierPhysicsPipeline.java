@@ -196,6 +196,7 @@ public class RapierPhysicsPipeline implements PhysicsPipeline {
 
         final int id = Rapier3D.getID(subLevel);
         Rapier3D.createSubLevel(this.scene.handle(), id, new double[]{pos.x(), pos.y(), pos.z(), rot.x(), rot.y(), rot.z(), rot.w()});
+        this.activeSubLevels.put(id, subLevel);
 
         subLevel.updateMergedMassData(1.0f);
         final Vector3dc centerOfMass = subLevel.getMassTracker().getCenterOfMass();
@@ -206,7 +207,6 @@ public class RapierPhysicsPipeline implements PhysicsPipeline {
             this.onStatsChanged(subLevel);
         }
 
-        this.activeSubLevels.put(Rapier3D.getID(subLevel), subLevel);
     }
 
     /**
@@ -214,8 +214,10 @@ public class RapierPhysicsPipeline implements PhysicsPipeline {
      */
     @Override
     public void remove(final ServerSubLevel subLevel) {
-        Rapier3D.removeSubLevel(this.scene.handle(), Rapier3D.getID(subLevel));
-        this.activeSubLevels.remove(Rapier3D.getID(subLevel));
+        final int id = Rapier3D.getID(subLevel);
+        if (this.activeSubLevels.remove(id) != null) {
+            Rapier3D.removeSubLevel(this.scene.handle(), id);
+        }
     }
 
     /**
@@ -408,7 +410,9 @@ public class RapierPhysicsPipeline implements PhysicsPipeline {
 
     @Override
     public void onStatsChanged(@NotNull final ServerSubLevel subLevel) {
-        this.assertBodyValid(subLevel);
+        if (subLevel.isRemoved() || !this.activeSubLevels.containsKey(Rapier3D.getID(subLevel))) {
+            return;
+        }
 
         final BoundingBox3ic plotBounds = subLevel.getPlot().getBoundingBox();
         final int id = Rapier3D.getID(subLevel);

@@ -46,12 +46,15 @@ public class SableCommonEvents {
         if (plotChunk != null) {
             final LevelPlot plot = container.getPlot(chunkPos);
             final BlockPos blockPos = new BlockPos(x, y, z);
+            final SubLevel subLevel = plot.getSubLevel();
+
+            if (subLevel.isRemoved()) {
+                return;
+            }
 
             plotChunk.handleBlockChange(localX, y, localZ, oldState, newState);
             plot.updateBoundingBox();
             plot.expandIfNecessary(blockPos);
-
-            final SubLevel subLevel = plot.getSubLevel();
 
             final WaterOcclusionContainer<?> waterOcclusionContainer = WaterOcclusionContainer.getContainer(level);
 
@@ -78,10 +81,6 @@ public class SableCommonEvents {
                 if (!oldState.isAir() && newState.isAir()) {
                     heatMapManager.onSolidRemoved(blockPos);
                 }
-            }
-
-            if (subLevel.isRemoved()) {
-                return;
             }
         }
 

@@ -538,7 +538,6 @@ public class SubLevelPhysicsSystem implements SubLevelObserver {
 
                 if (notifyPipeline) {
                     serverSubLevel.updateMergedMassData((float) this.getPartialPhysicsTick());
-                    this.pipeline.onStatsChanged(serverSubLevel);
                 }
             }
         }
